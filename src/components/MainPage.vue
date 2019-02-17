@@ -9,6 +9,10 @@
                 <a class="nav-link" data-toggle="tab" href="#tab_ext" :class="{active : current_tab==2}"
                    @click="setTab('2')">Дополнительные параметры</a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link" data-toggle="tab" href="#tab_ext" :class="{active : current_tab==3}"
+                   @click="setTab('3')">Результат</a>
+            </li>
         </ul>
         <div class="tab-content">
             <div class="tab-pane" :class="{active : current_tab==1}">
@@ -68,10 +72,10 @@
                     </div>
                     <div class="col-lg-4">
                         <h6>Заголовок 1 (max 35)</h6>
-                        <div class="row" v-for="(header_word) in header1">
+                        <div class="row" v-for="(header_word, key) in header1">
                             <div class="col-lg-11">
                                 <input type="text" v-model="header_word.value" class="custom-text"
-                                       :class="{danger: header_word.value.length>35}"/>
+                                       :class="{danger: header_word.value.length>35}" @change="test(header_word.value, key)"/>
                             </div>
                             <div class="col-lg-1">
                                 <span> {{ header_word.value.length }}</span>
@@ -97,6 +101,8 @@
                     <div class="col-2 col-lg-2">
                         <label>URL сайта</label>
                         <input type="text" v-model="url" class="form-control" placeholder="http://icosmetics.ru/"/>
+                        <label>Группа</label>
+                        <input type="text" v-model="group_name" class="form-control" placeholder="название группы"/>
                     </div>
                     <div class="col-4 col-lg-4">
                         <label>Метка</label>
@@ -109,9 +115,25 @@
                         <textarea v-model="info_text" class="form-control" :class="{danger: info_text.length>81}" placeholder="Дополнительный текст не более 81 символа"></textarea>
                     </div>
                     <div class="col-2 col-lg-2">
+                        <br/>
+                        <button type="button" class="btn btn-success" @click="generateHTML">экспорт в HTML</button><br/><br/>
                         <button type="button" class="btn btn-danger">экспорт в Excel</button>
                     </div>
                 </div>
+            </div>
+            <div class="tab-pane" :class="{active : current_tab==3}">
+                <h3>Предложение текстовых блоков для рекламной кампании</h3>
+                <table border="1">
+                    <tr v-for="(item, key) in result_html">
+                        <td>{{ key+1 }}</td>
+                        <td>{{ item.name_group }}</td>
+                        <td>{{ item.minus_word }}</td>
+                        <td>{{ item.header1 }}</td>
+                        <td>{{ item.header2 }}</td>
+                        <td>{{ item.info_text }}</td>
+                        <td>{{ item.url }}</td>
+                    </tr>
+                </table>
             </div>
         </div>
     </div>
@@ -142,7 +164,9 @@
                 info_text: '',
                 url: '',
                 s1: '?utm_source=Yandex&utm_medium=Direct&utm_term={Keyword}&utm_content=Poisk&utm_campaign=',
-                a1: ''
+                a1: '',
+                group_name: '',
+                result_html: []
             }
         },
         created() {
@@ -174,17 +198,22 @@
                     this.header1.push({'value': ''});
                     this.header2.push({'value': ''});
                 }
-            }
+            },
         },
         methods: {
+            test(val, key) {
+                console.log('change header 2', key, val);
+                this.header2[key].value = val +' '+ this.second_words[this.randomInteger(0, 4)].value;
+                console.log(this.header2[key]);
+            },
             setTab: function (id) {
                 this.current_tab = id;
             },
             generateHeaders: function () {
                 this.process = true;
-                this.minus_words.forEach(function (item, i) {
-                    console.log('val', item, i);
-                })
+                // this.minus_words.forEach(function (item, i) {
+                //     console.log('val', item, i);
+                // })
                 this.header1 = this.minus_words.map((item, i) => {
                     return {'value': this.getWord(item.value)};
                 });
@@ -196,8 +225,12 @@
             },
             getWord(word) {
                 let result = ''
-                if (word != '')
+                if (word != '') {
+                    word = word.charAt(0).toUpperCase() + word.substr(1);
+                    word = word.replace(/\+/g,' ');
+                    word = word.replace(/\_/g,' ');
                     result = word + ' ' + this.words[this.randomInteger(0, 4)].value;
+                }
                 return result
             },
             getSecondWord(word) {
@@ -215,6 +248,20 @@
                 console.log('file', this.$refs.file.files[0]);
                 this.file = this.$refs.file.files[0];
                 console.log('file', this.$refs.file.files[0]);
+            },
+            generateHTML() {
+                this.result_html = [];
+                this.minus_words.forEach((item, i) => {
+                    console.log('i',this.header1[i].value, this.header1[i]);
+                    this.result_html.push(
+                        {'name_group': this.group_name,
+                        'minus_word': item.value,
+                        'header1': this.header1[i].value,
+                        'header2': this.header2[i].value,
+                        'info_text': this.info_text,
+                        'url': this.url+this.s1+this.a1}
+                        );
+                })
             }
 
         }
@@ -223,7 +270,7 @@
 
 <style scoped>
     .danger {
-        background-color: #ff4700;
+        background-color: #cc7f91;
     }
 
     h6 {
@@ -239,10 +286,15 @@
         padding: 5px;
         height: 27px;
         width: 100%;
-        color: #327f9a;
+        color: #111115;
+
     }
 
     textarea {
         height: 190px;
+    }
+    table {
+        width: 100%;
+        font-size: 10px;
     }
 </style>
