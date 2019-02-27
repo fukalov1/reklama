@@ -1,6 +1,7 @@
 <template>
   <div id="app">
-    <h2>Генератор объявлений</h2>
+    <h3>Генератор рекламных объявлений Яндекс</h3>
+    <h5>for Direct Commander</h5>
     <MainPage/>
   </div>
 </template>

@@ -122,6 +122,34 @@
                         <button type="button" class="btn btn-success" @click="generateHTML">экспорт в HTML</button><br/><br/>
                     </div>
                 </div>
+                <div class="row">
+                    <div class="col-2 col-lg-2">
+                        <label>Отображаемая ссылка ({{ os.length }})</label>
+                        <input type="text" v-model="os" class="custom-text" placeholder=""/>
+                        <label>Длина заголовка 1</label>
+                        <input type="text" v-model="length_header1" class="custom-text" placeholder="название группы"/>
+                        <label>Длина заголовка 2</label>
+                        <input type="text" v-model="length_header2" class="custom-text" placeholder="название группы"/>
+                    </div>
+                    <div class="col-2 col-lg-2">
+                        <label>Быстрые ссылки ({{ length_quick_link }})</label>
+                        <div class="col-12 col-lg-12" v-for="(item, key) in quick_link">
+                            <input type="text" v-model="item.value" class="custom-text"/>
+                        </div>
+                    </div>
+                    <div class="col-2 col-lg-2">
+                        <label>Поля уточнения ({{ length_quick_link_note }})</label>
+                        <div class="col-12 col-lg-12" v-for="(item, key) in quick_link">
+                            <input type="text" v-model="item.note" class="custom-text"/>
+                        </div>
+                    </div>
+                    <div class="col-6 col-lg-6">
+                        <label>Адреса</label>
+                        <div class="col-12 col-lg-12" v-for="(item, key) in quick_link">
+                            <input type="text" v-model="item.url" class="custom-text"/>
+                        </div>
+                    </div>
+                </div>
             </div>
             <div class="tab-pane" :class="{active : current_tab==3}">
                 <div class="col-lg-12 text-right"> <button type="button" class="btn btn-danger" @click="exportExcel">экспорт Excel</button></div>
@@ -135,6 +163,10 @@
                         <td>{{ item.header2 }}</td>
                         <td>{{ item.info_text }}</td>
                         <td>{{ item.url }}</td>
+                        <td>{{ item.os }}</td>
+                        <td>{{ item.quick_link_value }}</td>
+                        <td>{{ item.quick_link_url }}</td>
+                        <td>{{ item.quick_link_note }}</td>
                     </tr>
                 </table>
             </div>
@@ -179,7 +211,14 @@
                 group_name: '',
                 result_html: [],
                 length_header1: 35,
-                length_header2: 53
+                length_header2: 53,
+                os: '',
+                quick_link: [
+                    {'value': '', 'note': '', 'url': ''},
+                    {'value': '', 'note': '', 'url': ''},
+                    {'value': '', 'note': '', 'url': ''},
+                    {'value': '', 'note': '', 'url': ''},
+                ],
             }
         },
         created() {
@@ -188,6 +227,22 @@
             //     this.header1.push({'value': ''});
             //     this.header2.push({'value': ''});
             // }
+        },
+        computed: {
+            length_quick_link: function() {
+                let str_len = 0;
+                for(let i=0; i<this.quick_link.length; i++) {
+                    str_len += this.quick_link[i].value.length;
+                }
+                return str_len;
+            },
+            length_quick_link_note: function() {
+                let str_len = 0;
+                for(let i=0; i<this.quick_link.length; i++) {
+                    str_len += this.quick_link[i].note.length;
+                }
+                return str_len;
+            },
         },
         watch: {
             count_header: function (val) {
@@ -238,17 +293,9 @@
             },
             generateHeaders: function () {
                 this.process = true;
-                // this.minus_words.forEach(function (item, i) {
-                //     console.log('val', item, i);
-                // })
                 this.header1 = this.minus_words.map((item, i) => {
                     return {'value': this.getWord(item.value, this.words, this.length_header1)};
                 });
-                // console.log(this.header1);
-
-                // this.header2 = this.header1.map((item, i) => {
-                //     return {'value': this.getSecondWord()};
-                // });
             },
             generateSecondHeaders: function () {
                 console.log('generate headers2');
@@ -270,8 +317,10 @@
                     });
                     // console.log('temp words', temp_words);
 
+
                     let count = temp_words.length;
                     for(let i=0; i< count; i++) {
+                        // debugger
                         let max_word = temp_words.reduce(function (item, current) {
                             // console.log('item', item, current);
                             if (item.value.length < current.value.length)
@@ -280,7 +329,7 @@
                         });
                         result = word + ' ' + max_word.value;
                         console.log(word, 'max word', max_word.value,'result', result.length);
-                        if (result.length>=max_length) {
+                        if (this.getLength(result)>max_length) {
                             temp_words = temp_words.filter(function (val) {
                                 return val.value!=max_word.value;
                             });
@@ -318,7 +367,7 @@
                         });
                         result = max_word.value;
                         console.log(word, 'max word', max_word.value,'result', result.length);
-                        if ((word + ' ' + max_word.value).length>=max_length) {
+                        if (this.getLength(word + ' ' + max_word.value)>max_length) {
                             temp_words = temp_words.filter(function (val) {
                                 return val.value!=max_word.value;
                             });
@@ -347,15 +396,21 @@
             generateHTML() {
                 this.result_html = [];
                 this.minus_words.forEach((item, i) => {
-                    console.log('i',this.header1[i].value, this.header1[i]);
+                    console.log('i', this.header1[i].value, this.header1[i]);
                     this.result_html.push(
-                        {'name_group': this.group_name,
-                        'minus_word': item.value,
-                        'header1': this.header1[i].value,
-                        'header2': this.header2[i].value,
-                        'info_text': this.info_text,
-                        'url': this.url+this.s1+this.a1}
-                        );
+                        {
+                            'name_group': this.group_name,
+                            'minus_word': item.value,
+                            'header1': this.header1[i].value,
+                            'header2': this.header2[i].value,
+                            'info_text': this.info_text,
+                            'url': this.url + this.s1 + this.a1,
+                            'os': this.os,
+                            'quick_link_value': this.quick_link[0].value + '||' + this.quick_link[1].value + '||' + this.quick_link[2].value + '||' + this.quick_link[3].value,
+                            'quick_link_url': this.quick_link[0].url + '||' + this.quick_link[1].url + '||' + this.quick_link[2].url + '||' + this.quick_link[3].url,
+                            'quick_link_note': this.quick_link[0].note + '||' + this.quick_link[1].note + '||' + this.quick_link[2].note + '||' + this.quick_link[3].note,
+                        }
+                    );
                 });
                 this.current_tab = 3;
                 this.exportExcel();
