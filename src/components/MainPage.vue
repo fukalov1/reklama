@@ -137,13 +137,24 @@
                             <input type="text" v-model="item.value" class="custom-text"/>
                         </div>
                     </div>
+                    <div class="col-3 col-lg-3">
+                        <label>Описания быстрых ссылок </label>
+                        <div class="row" v-for="(item, key) in quick_link">
+                            <div class="col-11 col-lg-11">
+                                <input type="text" v-model="item.text" class="custom-text"/>
+                            </div>
+                            <div class="col-1 col-lg-1">
+                                {{ item.text.length }}
+                            </div>
+                        </div>
+                    </div>
                     <div class="col-2 col-lg-2">
                         <label>Поля уточнения ({{ length_quick_link_note }})</label>
                         <div class="col-12 col-lg-12" v-for="(item, key) in quick_link">
                             <input type="text" v-model="item.note" class="custom-text"/>
                         </div>
                     </div>
-                    <div class="col-6 col-lg-6">
+                    <div class="col-3 col-lg-3">
                         <label>Адреса</label>
                         <div class="col-12 col-lg-12" v-for="(item, key) in quick_link">
                             <input type="text" v-model="item.url" class="custom-text"/>
@@ -214,10 +225,10 @@
                 length_header2: 53,
                 os: '',
                 quick_link: [
-                    {'value': '', 'note': '', 'url': ''},
-                    {'value': '', 'note': '', 'url': ''},
-                    {'value': '', 'note': '', 'url': ''},
-                    {'value': '', 'note': '', 'url': ''},
+                    {'value': '', 'note': '', 'url': '', 'text': ''},
+                    {'value': '', 'note': '', 'url': '', 'text': ''},
+                    {'value': '', 'note': '', 'url': '', 'text': ''},
+                    {'value': '', 'note': '', 'url': '', 'text': ''},
                 ],
             }
         },
@@ -409,6 +420,7 @@
                             'quick_link_value': this.quick_link[0].value + '||' + this.quick_link[1].value + '||' + this.quick_link[2].value + '||' + this.quick_link[3].value,
                             'quick_link_url': this.quick_link[0].url + '||' + this.quick_link[1].url + '||' + this.quick_link[2].url + '||' + this.quick_link[3].url,
                             'quick_link_note': this.quick_link[0].note + '||' + this.quick_link[1].note + '||' + this.quick_link[2].note + '||' + this.quick_link[3].note,
+                            'quick_link_text': this.quick_link[0].text + '||' + this.quick_link[1].text + '||' + this.quick_link[2].text + '||' + this.quick_link[3].text,
                         }
                     );
                 });
