@@ -52,6 +52,8 @@
                                 <button type="button" class="btn btn-primary" @click="generateHeaders">
                                     получить Заголовок 1
                                 </button>
+                                <input type="checkbox" v-model="with_quote"/> В кавычках<br/>
+                                <input type="checkbox" v-model="with_znak"/> Со знаком !<br/>
                             </div>
                             <div class="col-lg-6">
                                 <button type="button" class="btn btn-primary" @click="generateSecondHeaders">
@@ -230,6 +232,8 @@
                     {'value': '', 'note': '', 'url': '', 'text': ''},
                     {'value': '', 'note': '', 'url': '', 'text': ''},
                 ],
+                with_quote: false,
+                with_znak: false,
             }
         },
         created() {
@@ -305,14 +309,33 @@
             generateHeaders: function () {
                 this.process = true;
                 this.header1 = this.minus_words.map((item, i) => {
-                    return {'value': this.getWord(item.value, this.words, this.length_header1)};
+                    let str = this.getWord(item.value, this.words, this.length_header1);
+
+                    if (this.with_znak) {
+                        str = str.replace(/\s+/g,' !');
+                        str = '!'+str;
+                    }
+
+                    if (this.with_quote)
+                        str = '"'+str+'"';
+                    return {'value': str};
                 });
             },
             generateSecondHeaders: function () {
                 console.log('generate headers2');
                 this.process = true;
                 this.header2 = this.header1.map((item, i) => {
-                    return {'value': this.getSecondWord(item.value, this.second_words, this.length_header2)};
+                    let str = this.getSecondWord(item.value, this.second_words, this.length_header2);
+
+                    if (this.with_znak) {
+                        str = str.replace(/\s+/g,' !');
+                        str = '!'+str;
+                    }
+
+                    if (this.with_quote)
+                        str = '"'+str+'"';
+                    
+                    return {'value': str};
                 });
             },
             getWord(word, words, max_length) {
@@ -338,7 +361,9 @@
                                 item = current;
                             return item;
                         });
+
                         result = word + ' ' + max_word.value;
+
                         console.log(word, 'max word', max_word.value,'result', result.length);
                         if (this.getLength(result)>max_length) {
                             temp_words = temp_words.filter(function (val) {
